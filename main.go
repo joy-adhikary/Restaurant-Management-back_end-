@@ -19,8 +19,8 @@ func main() {
 		port = "8000"
 	}
 
-	router := gin.new() //new gin router created
-	router.user(gin.Logger())
+	router := gin.New() //new gin router created
+	router.Use(gin.Logger())
 
 	routes.UserRoutes(router)
 	router.Use(middleware.Authentication()) // check user is authenticat or not if yes then can use the router
