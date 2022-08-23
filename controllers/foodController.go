@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -23,9 +24,24 @@ var validate = validator.New()
 func GetFoods() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
-		var _, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
-		c.JSON(http.StatusOK, foodcollection)
+
+		result, err := foodcollection.Find(context.TODO(), bson.M{})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"errors": "data fatch issue arise "})
+			return
+
+		}
+
+		var allFoods []bson.M
+
+		if err = result.All(ctx, &allFoods); err != nil {
+			log.Fatal(err)
+			return
+		}
+		c.JSON(http.StatusOK, allFoods)
 
 	}
 }
@@ -39,12 +55,12 @@ func GetFood() gin.HandlerFunc {
 
 		var food models.Food
 
-		err := foodcollection.FindOne(ctx, bson.M{"food_id": foodId}).Decode(&food)
+		err := foodcollection.FindOne(ctx, bson.M{"food_id": foodId}).Decode(&food) // foodCollection er food_id er songe match korbe (params er food_id) foodId
 		defer cancel()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error in fatching data "})
 		}
-		c.JSON(http.StatusOK, food)
+		c.JSON(http.StatusOK, food) //it will encode the row file into json format and show at web
 	}
 }
 
@@ -62,9 +78,10 @@ func CreateFood() gin.HandlerFunc {
 		var menu models.Menu
 		var food models.Food
 
-		if err := c.BindJSON(&food); err != nil {
+		if err := c.BindJSON(&food); err != nil { //catch the web json formar and decode it into normal form and push it into food
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
+
 		validationErr := validate.Struct(food) // validate if data correct or not
 
 		if validationErr != nil {
@@ -72,7 +89,7 @@ func CreateFood() gin.HandlerFunc {
 			return
 		}
 
-		err := menuCollection.FindOne(ctx, bson.M{"menu_id": *food.Menu_id}).Decode(&menu)
+		err := menuCollection.FindOne(ctx, bson.M{"menu_id": *food.Menu_id}).Decode(&menu) // bson.M{kontar songe : konta mathch korbo }
 
 		if err != nil {
 			msg := fmt.Sprintf("menu not found")
@@ -80,8 +97,8 @@ func CreateFood() gin.HandlerFunc {
 			return
 		}
 
-		food.Created_at, _ = time.Parse(time.RFC3339, time.Now()).Format(time.RFC3339)
-		food.Updated_at, _ = time.Parse(time.RFC3339, time.Now()).Format(time.RFC3339)
+		food.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		food.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		food.ID = primitive.NewObjectID()
 		food.Food_id = food.ID.Hex()
 		num := toFixed(*food.Price, 2)
