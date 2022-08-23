@@ -57,6 +57,10 @@ func GetMenu() gin.HandlerFunc {
 	}
 }
 
+func inTimeSpan(start, end, check time.Time) bool {
+	return start.After(time.Now()) && end.After(start)
+}
+
 func UpdateMenu() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
@@ -67,13 +71,14 @@ func UpdateMenu() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
 		var menuId = c.Param("menu_id")
 		filter := bson.M{"menu_id": menuId}
 
 		var updateObj primitive.D
 
 		if menu.Start_date != nil && menu.End_date != nil {
-			if !inTimeSpan(*&menu.Start_date, *&menu.End_date, time.Now()) {
+			if !inTimeSpan(*menu.Start_date, *menu.End_date, time.Now()) {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "ops error"})
 				defer cancle()
 				return
@@ -99,6 +104,7 @@ func UpdateMenu() gin.HandlerFunc {
 		opt := options.UpdateOptions{
 			Upsert: &upsert,
 		}
+
 		result, err := menuCollection.UpdateOne(
 			ctx,
 			filter,
@@ -106,7 +112,8 @@ func UpdateMenu() gin.HandlerFunc {
 				{"$set", updateObj},
 			},
 			&opt,
-		)
+		) // menuCollection.UpdateOne(ctx,bson.M{"menu_id": menuId},bson.D{{"$set", updateObj}, },&opt)
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed "})
 		}
