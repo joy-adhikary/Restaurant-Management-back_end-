@@ -59,6 +59,7 @@ func GetFood() gin.HandlerFunc {
 
 		err := foodcollection.FindOne(ctx, bson.M{"food_id": foodId}).Decode(&food) // foodCollection er food_id er songe match korbe (params er food_id) foodId
 		defer cancel()
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error in fatching data "})
 		}
@@ -88,7 +89,7 @@ func UpdateFood() gin.HandlerFunc {
 		}
 
 		if food.Price != nil {
-			updateObj = append(updateObj, bson.E{"price", food.Price})
+			updateObj = append(updateObj, bson.E{"price", food.Price}) // bson.E kontar majhe : konta rakhbo
 		}
 
 		if food.Food_image != nil {
