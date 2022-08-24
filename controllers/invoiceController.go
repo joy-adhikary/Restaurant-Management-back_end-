@@ -131,9 +131,10 @@ func CreateInvoice() gin.HandlerFunc {
 
 		result, insertErr := invoiceCollection.InsertOne(ctx, invoice)
 		if insertErr != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "nvoice item was not created"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invoice item was not created"})
 			return
 		}
+
 		defer cancle()
 		c.JSON(http.StatusOK, result)
 
@@ -190,6 +191,7 @@ func UpdateInvoice() gin.HandlerFunc {
 			},
 			&opt,
 		)
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error when the update data is fatch on invoice "})
 			return
