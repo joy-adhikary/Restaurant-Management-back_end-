@@ -25,6 +25,7 @@ func GetMenus() gin.HandlerFunc {
 		defer cancle()
 
 		result, err := menuCollection.Find(context.TODO(), bson.M{})
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occure when data fatch"})
 		}

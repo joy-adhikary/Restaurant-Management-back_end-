@@ -69,6 +69,7 @@ func GetOrderItem() gin.HandlerFunc {
 func CreateOrderItem() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
+
 		ctx, cancle := context.WithTimeout(context.Background(), 100*time.Second)
 
 		var orderItemPack OrderItemPack
@@ -85,15 +86,16 @@ func CreateOrderItem() gin.HandlerFunc {
 		order.Table_id = orderItemPack.Table_id
 		order_id := OrderItemOrderCreator(order)
 
-		for _, orderItem := range orderItemPack.order_items {
-			orderItem.Order_id = order_id
+		for _, orderItem := range orderItemPack.order_items { //order_items []models.OrderItem
 
+			orderItem.Order_id = order_id
 			validationErr := validate.Struct(orderItem)
 
 			if validationErr != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 				return
 			}
+
 			orderItem.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 			orderItem.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 			orderItem.ID = primitive.NewObjectID()
@@ -103,6 +105,11 @@ func CreateOrderItem() gin.HandlerFunc {
 			orderItemsToBeInserted = append(orderItemsToBeInserted, orderItem)
 
 		}
+
+		// orderitem er majhe onk gula order thakbe .. mane akta slice tahkbe r akta table num tahkbe..silce er majhe onk gula item thkbe ..
+		// ajonno amake sob  gula orderitem er kisu kisu data realtime update korty hobe
+		// as like ID , created_at , updated_at to seijonno amake oi slice a loop calai akta akta kore value(item) niye update korty hobe
+		//thn oi update kora slice index gula (akta full set of struct ) ke akta slice er majhe rakhtyci jeita orderitemtobeinserted
 
 		insertedOrderItems, err := orderItemCollection.InsertOne(ctx, orderItemsToBeInserted)
 

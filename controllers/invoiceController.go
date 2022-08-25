@@ -124,6 +124,7 @@ func CreateInvoice() gin.HandlerFunc {
 		invoice.Invoice_id = invoice.ID.Hex()
 
 		validationErr := validate.Struct(invoice)
+
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
@@ -163,8 +164,8 @@ func UpdateInvoice() gin.HandlerFunc {
 
 		if invoice.Payment_method != nil {
 			updateObj = append(updateObj, bson.E{"payment_method", invoice.Payment_method})
-
 		}
+
 		if invoice.Payment_status != nil {
 			updateObj = append(updateObj, bson.E{"payment_status", invoice.Payment_status})
 		}

@@ -86,6 +86,7 @@ func UpdateOrder() gin.HandlerFunc {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "table id not founded in the database"})
 				return
+
 			}
 			updateObj = append(updateObj, bson.E{"table_id", table.Table_id})
 		}
