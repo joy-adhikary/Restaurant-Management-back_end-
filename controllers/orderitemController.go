@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type OrderItemPack struct {
@@ -102,16 +103,17 @@ func CreateOrderItem() gin.HandlerFunc {
 			orderItem.Order_Item_id = orderItem.ID.Hex()
 			var num = toFixed(*orderItem.Unit_Price, 2)
 			orderItem.Unit_Price = &num
+
 			orderItemsToBeInserted = append(orderItemsToBeInserted, orderItem)
 
 		}
 
-		// orderitem er majhe onk gula order thakbe .. mane akta slice tahkbe r akta table num tahkbe..silce er majhe onk gula item thkbe ..
+		// orderitem er majhe onk gula order thakbe .. mane akta slice tahkbe r akta table num tahkbe..silce er majhe onk gula item or [index] thkbe ..
 		// ajonno amake sob  gula orderitem er kisu kisu data realtime update korty hobe
 		// as like ID , created_at , updated_at to seijonno amake oi slice a loop calai akta akta kore value(item) niye update korty hobe
 		//thn oi update kora slice index gula (akta full set of struct ) ke akta slice er majhe rakhtyci jeita orderitemtobeinserted
 
-		insertedOrderItems, err := orderItemCollection.InsertOne(ctx, orderItemsToBeInserted)
+		insertedOrderItems, err := orderItemCollection.InsertMany(ctx, orderItemsToBeInserted)
 
 		if err != nil {
 			log.Fatal(err)
@@ -125,6 +127,54 @@ func CreateOrderItem() gin.HandlerFunc {
 func UpdateOrderItem() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
+
+		ctx, cancle := context.WithTimeout(context.Background(), 100*time.Second)
+
+		defer cancle()
+ 
+		var orderItem models.OrderItem
+
+		   err:=c.BindJSON(&orderItem);err!=nil{
+		     c.JSON(http.StatusInternalServerError,gin.H{"error":"error occure when update orderitem "})
+		   }
+
+		orderItemId := c.Param("order_item_id")
+		filter := bson.M{"order_item_id": orderItemId}
+
+		var Updateobj premitive.D
+
+		if orderItem.Unit_Price != nil {
+			Updateobj = append(Updateobj, bson.E{"unit_price": *&orderItem.Unit_Price})
+		}
+		if orderItem.Food_id != nil {
+			Updateobj = append(Updateobj, bson.E{"food_id", *orderItem.Food_id})
+		}
+		if orderItem.Quantity != nil {
+			Updateobj = append(Updateobj, bson.E{"quantity", *orderItem.Quantity})
+		}
+
+		orderItem.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		Updateobj = append(Updateobj, bson.E{"updated_at", orderItem.Updated_at})
+
+		upsert := true
+		opt := options.UpdateOptions{
+			Upsert: &upsert,
+		}
+
+		result, err := orderItemCollection.UpdateOne(
+			ctx,
+			filter,
+			bson.D{
+				{"$set", updateObj},
+			},
+			&opt,
+		) // orderItemCollection.UpdateOne(ctx,bson.M{"menu_id": menuId},bson.D{{"$set", updateObj}, },&opt)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed at updating orderitem"})
+		}
+		defer cancle()
+		c.JSON(http.StatusOK, result)
 
 	}
 }

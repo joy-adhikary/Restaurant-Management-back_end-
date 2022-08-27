@@ -68,6 +68,7 @@ func UpdateMenu() gin.HandlerFunc {
 
 		var ctx, cancle = context.WithTimeout(context.Background(), 100*time.Second)
 		var menu models.Menu
+
 		if err := c.BindJSON(&menu); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
