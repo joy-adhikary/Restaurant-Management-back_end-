@@ -9,7 +9,9 @@ import (
 	"github.com/joy-adhikary/Restaurant-Management-back_end/database"
 	"github.com/joy-adhikary/Restaurant-Management-back_end/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var tableCollection *mongo.Collection = database.OpenCollection(database.Client, "table")
@@ -71,6 +73,47 @@ func UpdateTable() gin.HandlerFunc {
 
 		tableId := c.Param("table_id")
 
+		if err := c.BindJSON(&table); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "can not create table "})
+			return
+		}
+
+		var updateObj primitive.D
+
+		if table.Number_of_guests != nil {
+
+			updateObj = append(updateObj, bson.E{"number_of_guests", table.Number_of_guests})
+		}
+		if table.Table_number != nil {
+
+			updateObj = append(updateObj, bson.E{"table_number", table.Table_number})
+		}
+
+		table.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		updateObj = append(updateObj, bson.E{"updated_at", table.Updated_at})
+
+		filter := bson.M{"table_id": tableId}
+
+		upsert := true
+		opt := options.UpdateOptions{
+			Upsert: &upsert,
+		}
+
+		result, err := orderItemCollection.UpdateOne(
+			ctx,
+			filter,
+			bson.D{
+				{"$set", updateObj},
+			},
+			&opt,
+		) // tableItemCollection.UpdateOne(ctx,bson.M{"table_id": tableId},bson.D{{"$set", updateObj}, },&opt)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed at updating tableitems"})
+		}
+		// defer cancle()
+		c.JSON(http.StatusOK, result)
+
 	}
 }
 
@@ -83,7 +126,30 @@ func CreateTable() gin.HandlerFunc {
 
 		var table models.Table
 
-		tableId := c.Param("table_id")
+		if err := c.BindJSON(&table); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "can not create table "})
+			return
+		}
 
+		validationErr := validate.Struct(table)
+
+		if validationErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			return
+		}
+
+		table.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		table.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		table.ID = primitive.NewObjectID()
+		table.Table_id = table.ID.Hex()
+
+		result, err := tableCollection.InsertOne(ctx, table)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "table item not created "})
+			return
+		}
+
+		c.JSON(http.StatusOK, result)
 	}
 }
