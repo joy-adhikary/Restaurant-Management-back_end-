@@ -1,12 +1,12 @@
 package main
 
 import (
-	"Restaurant-Management-back_end/database"
-	"Restaurant-Management-back_end/middleware"
-	"Restaurant-Management-back_end/routes"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joy-adhikary/Restaurant-Management-back_end/database"
+	middleware "github.com/joy-adhikary/Restaurant-Management-back_end/middleware"
+	routes "github.com/joy-adhikary/Restaurant-Management-back_end/routes"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
