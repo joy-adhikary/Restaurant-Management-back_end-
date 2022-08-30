@@ -30,6 +30,23 @@ func GetFoods() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
+		// recordPerPage, err := strconv.Atoi(c.Query("recordPerPage"))
+		// if err != nil || recordPerPage < 1 {
+		// 	recordPerPage = 10
+		// }
+
+		// page, err := strconv.Atoi(c.Query("page"))
+		// if err != nil || page < 1 { // page negative or 0 hole
+		// 	page = 1 // 1st page dekhbo
+		// }
+
+		// startIndex := (page - 1) * recordPerPage
+		// startIndex, err = strconv.Atoi(c.Query("startIndex"))
+
+		// matchStage := bson.D{{"$match", bson.D{{}}}}                                                                     // match record by criteria in the db
+		// groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"_id", "null"}}}, {"total_count", bson.D{{"$sum", 1}}}}}} // group all record by criteria .. for example name group .. sob  gula ke group korbe name er upr
+		// projectStage:=                                                                                              // front end a ki dekhbo seita
+
 		result, err := foodcollection.Find(context.TODO(), bson.M{})
 
 		if err != nil {
