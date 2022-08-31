@@ -157,7 +157,7 @@ func UpdateOrderItem() gin.HandlerFunc {
 		}
 
 		orderItem.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		Updateobj = append(Updateobj, bson.E{"updated_at", orderItem.Updated_at})
+		Updateobj = append(Updateobj, bson.E{Key: "updated_at", Value: orderItem.Updated_at})
 
 		upsert := true
 		opt := options.UpdateOptions{
@@ -206,7 +206,7 @@ func ItemsByOrder(id string) (OrderItems []primitive.M, err error) {
 
 	//mongo work with json data
 
-	matchStage := bson.D{{"$match", bson.D{{"order_id", id}}}} // order item er (order id=id eita pass hocche ) er songe match korbo orderitem.order_id
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "order_id", Value: id}}}} // order item er (order id=id eita pass hocche ) er songe match korbo orderitem.order_id
 	// matchstage a akta key diye oi key er sob record fatch kora jai
 	lookupStage := bson.D{{"$lookup", bson.D{{"from", "food"}, {"localField", "food_id"}, {"foreignField", "food_id"}, {"as", "food"}}}}
 	//from => koi theke dekhbo (food collection er majhe ), amr local field konta , amr foreign field konta , ki hisabe dkehbo ei datagula
@@ -222,21 +222,21 @@ func ItemsByOrder(id string) (OrderItems []primitive.M, err error) {
 	unwindTableStage := bson.D{{"$unwind", bson.D{{"path", "$table"}, {"preserveNullAndEmptyArrays", true}}}}
 
 	projectStage := bson.D{
-		{"$project", bson.D{
+		{Key: "$project", Value: bson.D{
 			{"id", 0},
 			{"amount", "$food.price"},
 			{"total_count", 1},
 			{"food_name", "$food.name"},
 			{"food_image", "$food.food_image"},
 			{"table_number", "$table.table_number"},
-			{"table_id", "$table.table_id"},
-			{"order_id", "$order.order_id"},
-			{"price", "$food.price"},
-			{"quantity", 1},
+			{Key: "table_id", Value: "$table.table_id"},
+			{Key: "order_id", Value: "$order.order_id"},
+			{Key: "price", Value: "$food.price"},
+			{Key: "quantity", Value: 1},
 		}}}
 	// manage the front end// what goes to the front end
 
-	groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"order_id", "$order_id"}, {"table_id", "$table_id"}, {"table_number", "$table_number"}}}, {"payment_due", bson.D{{"$sum", "$amount"}}}, {"total_count", bson.D{{"$sum", 1}}}, {"order_items", bson.D{{"$sum", 1}}}}}}
+	groupStage := bson.D{{Key: "$group", Value: bson.D{{"_id", bson.D{{"order_id", "$order_id"}, {"table_id", "$table_id"}, {"table_number", "$table_number"}}}, {"payment_due", bson.D{{"$sum", "$amount"}}}, {"total_count", bson.D{{"$sum", 1}}}, {"order_items", bson.D{{"$sum", 1}}}}}}
 	//data gula ke group korbe akta perameter er upr base kore
 
 	projectStage2 := bson.D{

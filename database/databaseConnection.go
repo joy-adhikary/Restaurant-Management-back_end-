@@ -12,7 +12,7 @@ import (
 
 func DBinstance() *mongo.Client {
 
-	MongoDb := "mongodb+srv://joy:joy@cluster0.9ddwzki.mongodb.net/?retryWrites=true&w=majority"
+	MongoDb := "mongodb+srv://joy:123@cluster0.uo88nfp.mongodb.net/test"
 	fmt.Println(MongoDb)
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(MongoDb))
@@ -20,7 +20,7 @@ func DBinstance() *mongo.Client {
 		log.Fatal(err)
 	}
 
-	ctx, cancle := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancle := context.WithTimeout(context.Background(), 100*time.Second)
 
 	defer cancle()
 

@@ -4,18 +4,16 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joy-adhikary/Restaurant-Management-back_end/database"
 	middleware "github.com/joy-adhikary/Restaurant-Management-back_end/middleware"
 	routes "github.com/joy-adhikary/Restaurant-Management-back_end/routes"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var foodCollection *mongo.Collection = database.OpenCollection(database.Client, "food")
+//var foodCollection *mongo.Collection = database.OpenCollection(database.Client, "food")
 
 func main() {
 	port := os.Getenv("PORT")
 
-	if port == " " {
+	if port == "" {
 		port = "8000"
 	}
 
@@ -35,3 +33,12 @@ func main() {
 	router.Run(":" + port) // port a run korbe serveandlisten er mto
 
 }
+
+// {
+// 	"First_name":"joy",
+// 	"Last_name":"adhikary",
+// 	"Password":"112233",
+// 	"Email":"joyadhikary071@gmail.com",
+// 	"Phone":"01517144672",
+// 	"User_type":"ADMIN"
+//   }
