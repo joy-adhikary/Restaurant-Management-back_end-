@@ -33,7 +33,6 @@ func GetUsers() gin.HandlerFunc {
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"errors": "data fatch issue arise "})
 			return
-
 		}
 
 		var allusers []bson.M

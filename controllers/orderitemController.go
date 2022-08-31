@@ -78,6 +78,7 @@ func CreateOrderItem() gin.HandlerFunc {
 
 		if err := c.BindJSON(&orderItemPack); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			defer cancle()
 			return
 		}
 
@@ -94,6 +95,7 @@ func CreateOrderItem() gin.HandlerFunc {
 
 			if validationErr != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+				defer cancle()
 				return
 			}
 
