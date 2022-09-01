@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -104,29 +103,29 @@ func UpdateFood() gin.HandlerFunc {
 		var updateObj primitive.D
 
 		if food.Name != nil {
-			updateObj = append(updateObj, bson.E{"food_name", food.Name})
+			updateObj = append(updateObj, bson.E{Key: "food_name", Value: food.Name})
 		}
 
 		if food.Price != nil {
-			updateObj = append(updateObj, bson.E{"price", food.Price}) // bson.E kontar majhe : konta rakhbo
+			updateObj = append(updateObj, bson.E{Key: "price", Value: food.Price}) // bson.E kontar majhe : konta rakhbo
 		}
 
 		if food.Food_image != nil {
-			updateObj = append(updateObj, bson.E{"food_image", food.Food_image})
+			updateObj = append(updateObj, bson.E{Key: "food_image", Value: food.Food_image})
 		}
 
 		if food.Menu_id != nil {
 			err := menuCollection.FindOne(ctx, bson.M{"menu_id": food.Menu_id}).Decode(&menu)
 			if err != nil {
-				msg := fmt.Sprintf("menu was not found ")
+				msg := "menu was not found "
 				c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 				return
 			}
-			updateObj = append(updateObj, bson.E{"menu", food.Price})
+			updateObj = append(updateObj, bson.E{Key: "menu", Value: food.Price})
 		}
 
 		food.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		updateObj = append(updateObj, bson.E{"updated_at", food.Updated_at})
+		updateObj = append(updateObj, bson.E{Key: "updated_at", Value: food.Updated_at})
 
 		filter := bson.M{"food_id": foodId}
 		upsert := true
@@ -139,7 +138,7 @@ func UpdateFood() gin.HandlerFunc {
 			ctx,
 			filter,
 			bson.D{
-				{"$set", updateObj},
+				{Key: "$set", Value: updateObj},
 			},
 			&opt,
 		)
@@ -175,7 +174,7 @@ func CreateFood() gin.HandlerFunc {
 		err := menuCollection.FindOne(ctx, bson.M{"menu_id": *food.Menu_id}).Decode(&menu) // bson.M{kontar songe : konta mathch korbo }
 
 		if err != nil {
-			msg := fmt.Sprintf("menu not found")
+			msg := "menu not found"
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -189,7 +188,7 @@ func CreateFood() gin.HandlerFunc {
 
 		result, insertErr := foodcollection.InsertOne(ctx, food)
 		if insertErr != nil {
-			msg := fmt.Sprintf("food not created")
+			msg := "food not created"
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}

@@ -12,7 +12,7 @@ import (
 
 func DBinstance() *mongo.Client {
 
-	MongoDb := "mongodb+srv://joy:123@cluster0.uo88nfp.mongodb.net/test"
+	MongoDb := "mongodb+srv://joy:joy@cluster1.o9kxt73.mongodb.net/test"
 	fmt.Println(MongoDb)
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(MongoDb))

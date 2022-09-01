@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -88,11 +87,11 @@ func UpdateOrder() gin.HandlerFunc {
 				return
 
 			}
-			updateObj = append(updateObj, bson.E{"table_id", table.Table_id})
+			updateObj = append(updateObj, bson.E{Key: "table_id", Value: table.Table_id})
 		}
 
 		order.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		updateObj = append(updateObj, bson.E{"updated_at", order.Updated_at})
+		updateObj = append(updateObj, bson.E{Key: "updated_at", Value: order.Updated_at})
 
 		filter := bson.M{"order_id": orderId}
 
@@ -106,7 +105,7 @@ func UpdateOrder() gin.HandlerFunc {
 			ctx,
 			filter,
 			bson.D{
-				{"$set", updateObj},
+				{Key: "$set", Value: updateObj},
 			},
 			&opt,
 		)
@@ -144,7 +143,7 @@ func CreateOrder() gin.HandlerFunc {
 		err := orderCollection.FindOne(ctx, bson.M{"table_id": *order.Table_id}).Decode(table)
 
 		if err != nil {
-			msg := fmt.Sprintf("tabel not found")
+			msg := "tabel not found"
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -156,7 +155,7 @@ func CreateOrder() gin.HandlerFunc {
 
 		result, insertErr := orderCollection.InsertOne(ctx, order)
 		if insertErr != nil {
-			msg := fmt.Sprintf("order not created")
+			msg := "order not created"
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}

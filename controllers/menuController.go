@@ -71,7 +71,7 @@ func UpdateMenu() gin.HandlerFunc {
 
 		if err := c.BindJSON(&menu); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+
 		}
 
 		var menuId = c.Param("menu_id")
@@ -87,19 +87,19 @@ func UpdateMenu() gin.HandlerFunc {
 			}
 		}
 
-		updateObj = append(updateObj, bson.E{"start_date", menu.Start_date})
-		updateObj = append(updateObj, bson.E{"end_date", menu.End_date})
+		updateObj = append(updateObj, bson.E{Key: "start_date", Value: menu.Start_date})
+		updateObj = append(updateObj, bson.E{Key: "end_date", Value: menu.End_date})
 
 		if menu.Name != " " {
-			updateObj = append(updateObj, bson.E{"name", menu.Name})
+			updateObj = append(updateObj, bson.E{Key: "name", Value: menu.Name})
 		}
 		if menu.Catagory != " " {
-			updateObj = append(updateObj, bson.E{"catagory", menu.Catagory})
+			updateObj = append(updateObj, bson.E{Key: "catagory", Value: menu.Catagory})
 		}
 
 		menu.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		//menu.Created_at,_=time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		updateObj = append(updateObj, bson.E{"updated_at", menu.Updated_at})
+		updateObj = append(updateObj, bson.E{Key: "updated_at", Value: menu.Updated_at})
 
 		upsert := true
 
@@ -111,7 +111,7 @@ func UpdateMenu() gin.HandlerFunc {
 			ctx,
 			filter,
 			bson.D{
-				{"$set", updateObj},
+				{Key: "$set", Value: updateObj},
 			},
 			&opt,
 		) // menuCollection.UpdateOne(ctx,bson.M{"menu_id": menuId},bson.D{{"$set", updateObj}, },&opt)
